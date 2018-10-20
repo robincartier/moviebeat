@@ -1,0 +1,5 @@
+= Moviebeat Docs
+
+Welcome to the Moviebeat documentation.
+
+

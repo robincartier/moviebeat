@@ -1,0 +1,5 @@
+moviebeat
+Copyright 2018 Robin Cartier
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).
