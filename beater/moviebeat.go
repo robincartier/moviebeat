@@ -56,7 +56,7 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 
 	// Get last read line inside the IMDB file
 	// (stored into last_line_imdb.txt)
-	f, err := os.OpenFile("last_line_imdb.txt", os.O_RDWR, 0666)
+	f, err := os.OpenFile("beater/last_line_imdb.txt", os.O_RDWR, 0666)
 	if err != nil {
     return err
 	}
