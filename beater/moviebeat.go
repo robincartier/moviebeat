@@ -3,12 +3,13 @@ package beater
 import (
 	"time"
   "os"
-	"os/exec"
   "io"
   "fmt"
   "strconv"
-  "bufio"
   "strings"
+	"net/http"
+	"compress/gzip"
+	"io/ioutil"
 
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
@@ -59,16 +60,15 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 		logp.Info("Starting new beat loop")
 
 		// Get tsv data from IMDB website
-		cmd := exec.Command("wget", "https://datasets.imdbws.com/title.basics.tsv.gz", "-O", "/tmp/imdb.tsv.gz")
-		if err := cmd.Run(); err != nil {
-			return err
-		}
+		fileUrl := "https://datasets.imdbws.com/title.basics.tsv.gz"
+    err = DownloadFile("/tmp/imdb.tsv.gz", fileUrl)
+
 		logp.Info("IMDB file downloaded")
-	  cmd = exec.Command("gunzip", "/tmp/imdb.tsv.gz")
-	  if err := cmd.Run(); err != nil {
-	    return err
-	  }
-		logp.Info("IMDB file extracted")
+
+		content, err := ExtractGzip("/tmp/imdb.tsv.gz", "/tmp/imdb.tsv")
+		if err != nil {
+        return err
+    }
 
 		// Get last read line inside the IMDB file
 		// (stored into last_line_imdb.txt)
@@ -90,44 +90,31 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 
 		logp.Info("Last read line %d\n", last_read_line)
 
-		// open and read IMDB file
-		file, err := os.Open("/tmp/imdb.tsv")
-		if err != nil {
-	    return err
-		}
-
-		defer file.Close()
-
-		reader := bufio.NewReader(file)
-
 		counter := 0
-		for {
-			line, _, err := reader.ReadLine()
-			if err == io.EOF {
-				break
-			}
+		for _, line := range strings.Split(content, "\n") {
 
 			// send new data to elastic
 			if counter >= last_read_line {
 				data_line := strings.Split(string(line), "\t")
-
-				event := beat.Event{
-					Timestamp: time.Now(),
-					Fields: common.MapStr{
-						"type":    b.Info.Name,
-						"tconst":	data_line[0],
-						"titleType":	data_line[1],
-						"primaryTitle":	data_line[2],
-						"originalTitle":	data_line[3],
-						"isAdult":	data_line[4],
-						"startYear":	data_line[5],
-						"endYear":	data_line[6],
-						"runtimeMinutes":	data_line[7],
-						"genres":	data_line[8],
-					},
+				if(len(data_line) >= 9) {
+					event := beat.Event{
+						Timestamp: time.Now(),
+						Fields: common.MapStr{
+							"type":    b.Info.Name,
+							"tconst":	data_line[0],
+							"titleType":	data_line[1],
+							"primaryTitle":	data_line[2],
+							"originalTitle":	data_line[3],
+							"isAdult":	data_line[4],
+							"startYear":	data_line[5],
+							"endYear":	data_line[6],
+							"runtimeMinutes":	data_line[7],
+							"genres":	data_line[8],
+						},
+					}
+					bt.client.Publish(event)
+					logp.Info("Event sent")
 				}
-				bt.client.Publish(event)
-				logp.Info("Event sent")
 			}
 			counter++
 		}
@@ -147,12 +134,11 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 
 		logp.Info("Write last read line : %s", last_count)
 
-
 		// remove IMDB file
-		cmd = exec.Command("rm", "/tmp/imdb.tsv")
-	  if err := cmd.Run(); err != nil {
+		err = deleteFile("/tmp/imdb.tsv.gz")
+		if err != nil {
 	    return err
-	  }
+		}
 
 		logp.Info("Remove imdb file in /tmp")
 	}
@@ -162,4 +148,55 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 func (bt *Moviebeat) Stop() {
 	bt.client.Close()
 	close(bt.done)
+}
+
+
+func DownloadFile(filepath string, url string) error {
+
+    // Create the file
+    out, err := os.Create(filepath)
+    if err != nil {
+        return err
+    }
+    defer out.Close()
+
+    // Get the data
+    resp, err := http.Get(url)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    // Write the body to file
+    _, err = io.Copy(out, resp.Body)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func ExtractGzip(archive string, output string) (string, error) {
+	f, err := os.Open(archive)
+	if err != nil {
+		return "",err
+	}
+
+	reader, err := gzip.NewReader(f)
+	if err != nil {
+		return "",err
+	}
+
+	result, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return "",err
+	}
+	// io.Copy(output, reader)
+	// reader.Close()
+
+	return string(result), nil
+}
+
+func deleteFile(path string) error {
+	return os.Remove(path)
 }
