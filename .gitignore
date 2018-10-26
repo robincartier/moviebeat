@@ -2,5 +2,6 @@
 /build
 
 .DS_Store
+/moviebeat
 /moviebeat.test
 *.pyc
