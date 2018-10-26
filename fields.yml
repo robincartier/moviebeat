@@ -2,8 +2,48 @@
   title: moviebeat
   description:
   fields:
-    - name: counter
-      type: long
+    - name: tconst
+      type: string
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: titleType
+      type: string
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: primaryTitle
+      type: string
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: originalTitle
+      type: string
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: isAdult
+      type: bool
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: startYear
+      type: int
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: endYear
+      type: int
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: runtimeMinutes
+      type: int
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+    - name: genres
+      type: string
       required: true
       description: >
         PLEASE UPDATE DOCUMENTATION

@@ -4,7 +4,12 @@
 
 moviebeat:
   # Defines how often an event is sent to the output
-  period: 1s
+  period: 10s
+
+setup.template.name: "moviebeat"
+
+output.elasticsearch:
+  hosts: ["localhost:9200"]
 
 #================================ General ======================================
 
