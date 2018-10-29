@@ -36,9 +36,10 @@
           required: true
           description: >
             PLEASE UPDATE DOCUMENTATION
+
         - name: start_year
           type: integer
-          required: true
+          required: false
           description: >
             PLEASE UPDATE DOCUMENTATION
 

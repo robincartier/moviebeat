@@ -72,6 +72,18 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 
 		// Get last read line inside the IMDB file
 		// (stored into last_line_imdb.txt)
+
+		// if file does not exit, create it
+		if _, err := os.Stat("beater/last_line_imdb.txt"); os.IsNotExist(err) {
+			f, err := os.Create("beater/last_line_imdb.txt")
+			d := []byte("0000000")
+			_, err = f.Write(d)
+			if err != nil {
+			  return err
+			}
+			f.Sync()
+			f.Close()
+		}
 		f, err := os.OpenFile("beater/last_line_imdb.txt", os.O_RDWR, 0666)
 		if err != nil {
 	    return err
@@ -97,23 +109,13 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 			if counter >= last_read_line {
 				data_line := strings.Split(string(line), "\t")
 				if(len(data_line) >= 9) {
+					json := createJSON(b.Info.Name, data_line)
 					event := beat.Event{
 						Timestamp: time.Now(),
-						Fields: common.MapStr{
-							"type":    b.Info.Name,
-							"tconst":	data_line[0],
-							"titleType":	data_line[1],
-							"primaryTitle":	data_line[2],
-							"originalTitle":	data_line[3],
-							"isAdult":	data_line[4],
-							"startYear":	data_line[5],
-							"endYear":	data_line[6],
-							"runtimeMinutes":	data_line[7],
-							"genres":	data_line[8],
-						},
+						Fields: json,
 					}
 					bt.client.Publish(event)
-					logp.Info("Event sent")
+					// logp.Info("Event sent")
 				}
 			}
 			counter++
@@ -199,4 +201,34 @@ func ExtractGzip(archive string, output string) (string, error) {
 
 func deleteFile(path string) error {
 	return os.Remove(path)
+}
+
+func createJSON(beat_info_name string, data_line []string) (common.MapStr){
+	json := common.MapStr{
+		"type": beat_info_name,
+		"imdb.id": data_line[0],
+		"imdb.type": data_line[1],
+		"title.primary": data_line[2],
+		"title.original": data_line[3],
+		"duration": data_line[7],
+		"imdb.genres": data_line[8],
+	}
+
+	if(data_line[4] == "1"){
+		json["is_adult"] = true
+	} else {
+		json["is_adult"] = false
+	}
+	// Optional fields : start_year, end_year
+	// (see _meta/fields.yml)
+	addIfContent(&json, "start_year", data_line[5])
+	addIfContent(&json, "end_year", data_line[6])
+
+	return json
+}
+
+func addIfContent(m *common.MapStr, key string, value string) {
+	if(value != "\\N"){
+		(*m)[key] = value
+	}
 }
