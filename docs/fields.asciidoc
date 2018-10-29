@@ -2141,10 +2141,106 @@ Kubernetes container image
 None
 
 
-*`counter`*::
+*`tconst`*::
 +
 --
-type: long
+type: string
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`titleType`*::
++
+--
+type: string
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`primaryTitle`*::
++
+--
+type: string
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`originalTitle`*::
++
+--
+type: string
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`isAdult`*::
++
+--
+type: bool
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`startYear`*::
++
+--
+type: int
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`endYear`*::
++
+--
+type: int
+
+required: False
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`runtimeMinutes`*::
++
+--
+type: int
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`genres`*::
++
+--
+type: string
 
 required: True
 
