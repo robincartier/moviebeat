@@ -6,7 +6,11 @@ moviebeat:
   # Defines how often an event is sent to the output
   period: 10s
 
-setup.template.name: "moviebeat"
-
 output.elasticsearch:
   hosts: ["localhost:9200"]
+#   index: 'moviebeat-%{+yyyy.MM.dd}'
+
+# setup.template:
+#   name: 'moviebeat'
+#   pattern: 'moviebeat-*'
+#   enabled: true

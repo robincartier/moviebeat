@@ -5,3 +5,6 @@
 /moviebeat
 /moviebeat.test
 *.pyc
+/beater/last_line_imdb.txt
+/moviebeat.yml
+/moviebeat.reference.yml
