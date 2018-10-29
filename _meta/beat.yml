@@ -14,3 +14,4 @@ output.elasticsearch:
 #   name: 'moviebeat'
 #   pattern: 'moviebeat-*'
 #   enabled: true
+setup.template.fields: "fields.yml"
