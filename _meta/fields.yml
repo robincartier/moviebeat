@@ -27,7 +27,7 @@
 
         - name: title.original
           type: text
-          required: true
+          required: false
           description: >
             PLEASE UPDATE DOCUMENTATION
 
