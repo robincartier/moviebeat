@@ -209,8 +209,6 @@ func createJSON(beat_info_name string, data_line []string) (common.MapStr){
 		"imdb.id": data_line[0],
 		"imdb.type": data_line[1],
 		"title.primary": data_line[2],
-		"title.original": data_line[3],
-		"duration": data_line[7],
 	}
 
 	if(data_line[4] == "1"){
@@ -220,6 +218,8 @@ func createJSON(beat_info_name string, data_line []string) (common.MapStr){
 	}
 	// Optional fields : start_year, end_year
 	// (see _meta/fields.yml)
+	addIfContent(&json, "title.original", data_line[3])
+	addIfContent(&json, "duration", data_line[7])
 	addIfContent(&json, "start_year", data_line[5])
 	addIfContent(&json, "end_year", data_line[6])
 	addIfContent(&json, "imdb.genres", data_line[8])

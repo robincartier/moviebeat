@@ -51,12 +51,12 @@
 
         - name: duration
           type: integer
-          required: true
+          required: false
           description: >
             PLEASE UPDATE DOCUMENTATION
 
         - name: imdb.genres
           type: keyword
-          required: true
+          required: false
           description: >
             PLEASE UPDATE DOCUMENTATION
