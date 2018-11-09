@@ -211,7 +211,6 @@ func createJSON(beat_info_name string, data_line []string) (common.MapStr){
 		"title.primary": data_line[2],
 		"title.original": data_line[3],
 		"duration": data_line[7],
-		"imdb.genres": data_line[8],
 	}
 
 	if(data_line[4] == "1"){
@@ -223,6 +222,7 @@ func createJSON(beat_info_name string, data_line []string) (common.MapStr){
 	// (see _meta/fields.yml)
 	addIfContent(&json, "start_year", data_line[5])
 	addIfContent(&json, "end_year", data_line[6])
+	addIfContent(&json, "imdb.genres", data_line[8])
 
 	return json
 }

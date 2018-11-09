@@ -7,7 +7,7 @@ moviebeat:
   period: 10s
 
 output.elasticsearch:
-  hosts: ["localhost:9200"]
+  hosts: ["134.214.202.37:9200"]
 #   index: 'moviebeat-%{+yyyy.MM.dd}'
 
 # setup.template:

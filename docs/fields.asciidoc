@@ -2136,15 +2136,22 @@ Kubernetes container image
 --
 
 [[exported-fields-moviebeat]]
-== moviebeat fields
+== MovieBeat fields
 
 None
 
 
-*`tconst`*::
+[float]
+== moviebeat fields
+
+Fields from IMDb files
+
+
+
+*`moviebeat.imdb.id`*::
 +
 --
-type: string
+type: keyword
 
 required: True
 
@@ -2153,10 +2160,10 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`titleType`*::
+*`moviebeat.imdb.type`*::
 +
 --
-type: string
+type: keyword
 
 required: True
 
@@ -2165,10 +2172,10 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`primaryTitle`*::
+*`moviebeat.title.primary`*::
 +
 --
-type: string
+type: text
 
 required: True
 
@@ -2177,10 +2184,10 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`originalTitle`*::
+*`moviebeat.title.original`*::
 +
 --
-type: string
+type: text
 
 required: True
 
@@ -2189,10 +2196,10 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`isAdult`*::
+*`moviebeat.is_adult`*::
 +
 --
-type: bool
+type: boolean
 
 required: True
 
@@ -2201,22 +2208,10 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`startYear`*::
+*`moviebeat.start_year`*::
 +
 --
-type: int
-
-required: True
-
-PLEASE UPDATE DOCUMENTATION
-
-
---
-
-*`endYear`*::
-+
---
-type: int
+type: integer
 
 required: False
 
@@ -2225,10 +2220,22 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`runtimeMinutes`*::
+*`moviebeat.end_year`*::
 +
 --
-type: int
+type: integer
+
+required: False
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.duration`*::
++
+--
+type: integer
 
 required: True
 
@@ -2237,10 +2244,10 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`genres`*::
+*`moviebeat.imdb.genres`*::
 +
 --
-type: string
+type: keyword
 
 required: True
 

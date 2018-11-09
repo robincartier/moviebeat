@@ -6,10 +6,15 @@ moviebeat:
   # Defines how often an event is sent to the output
   period: 10s
 
-setup.template.name: "moviebeat"
-
 output.elasticsearch:
-  hosts: ["localhost:9200"]
+  hosts: ["134.214.202.37:9200"]
+#   index: 'moviebeat-%{+yyyy.MM.dd}'
+
+# setup.template:
+#   name: 'moviebeat'
+#   pattern: 'moviebeat-*'
+#   enabled: true
+setup.template.fields: "fields.yml"
 
 #================================ General =====================================
 
@@ -74,9 +79,7 @@ setup.kibana:
 # Configure what output to use when sending the data collected by the beat.
 
 #-------------------------- Elasticsearch output ------------------------------
-output.elasticsearch:
-  # Array of hosts to connect to.
-  hosts: ["localhost:9200"]
+
 
   # Optional protocol and basic auth credentials.
   #protocol: "https"

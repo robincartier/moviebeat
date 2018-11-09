@@ -1,52 +1,65 @@
 - key: moviebeat
-  title: moviebeat
+  title: "MovieBeat"
   description:
   fields:
-    - name: tconst
-      type: string
-      required: true
+    - name: moviebeat
+      type: group
       description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: titleType
-      type: string
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: primaryTitle
-      type: string
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: originalTitle
-      type: string
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: isAdult
-      type: bool
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: startYear
-      type: int
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: endYear
-      type: int
-      required: false
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: runtimeMinutes
-      type: int
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-    - name: genres
-      type: string
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
+        Fields from IMDb files
+      fields:
+        - name: imdb.id
+          type: keyword
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: imdb.type
+          type: keyword
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: title.primary
+          type: text
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: title.original
+          type: text
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: is_adult
+          type: boolean
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: start_year
+          type: integer
+          required: false
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: end_year
+          type: integer
+          required: false
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: duration
+          type: integer
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
+
+        - name: imdb.genres
+          type: keyword
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
 - key: beat
   title: Beat
