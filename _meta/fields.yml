@@ -1,5 +1,5 @@
 - key: moviebeat
-  title: "MovieBeat"
+  title: moviebeat
   description:
     fields:
       - name: imdb.id
@@ -46,6 +46,7 @@
 
       - name: duration
         type: integer
+        format: duration
         required: false
         description: >
           PLEASE UPDATE DOCUMENTATION

@@ -7,14 +7,21 @@ moviebeat:
   period: 10s
 
 output.elasticsearch:
-  hosts: ["134.214.202.37:9200"]
+  # hosts: ["134.214.202.37:9200"]
+  hosts: ["localhost:9200"]
 #   index: 'moviebeat-%{+yyyy.MM.dd}'
 
 # setup.template:
 #   name: 'moviebeat'
 #   pattern: 'moviebeat-*'
 #   enabled: true
+
+# setup.template.fields: "fields.yml"
+
+# Path to fields.yml file to generate the template
 setup.template.fields: "fields.yml"
+
+setup.template.overwrite: true # to overwrite the existing template.
 
 #================================ General ======================================
 

@@ -76,6 +76,8 @@ which is automatically generated based on `fields.yml` by running the following 
 make update
 ```
 
+To write your own fields in `fields.yml` check  https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html#_core_datatypes
+
 
 ### Cleanup
 
@@ -115,3 +117,10 @@ make release
 ```
 
 This will fetch and create all images required for the build process. The whole process to finish can take several minutes.
+
+## Useful commands
+
+Delete an elastic index ;
+```
+curl -XDELETE localhost:9200/moviebeat-7.0.0-alpha1-2018.xx.xx
+```

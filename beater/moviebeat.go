@@ -219,10 +219,10 @@ func createJSON(beat_info_name string, data_line []string) (common.MapStr){
 	// Optional fields : start_year, end_year
 	// (see _meta/fields.yml)
 	addIfContent(&json, "title.original", data_line[3])
-	addIfContent(&json, "duration", data_line[7])
-	addIfContent(&json, "start_year", data_line[5])
-	addIfContent(&json, "end_year", data_line[6])
 	addIfContent(&json, "imdb.genres", data_line[8])
+	addIfContentType(&json, "duration", data_line[7], "int")
+	addIfContentType(&json, "start_year", data_line[5], "int")
+	addIfContentType(&json, "end_year", data_line[6], "int")
 
 	return json
 }
@@ -230,5 +230,17 @@ func createJSON(beat_info_name string, data_line []string) (common.MapStr){
 func addIfContent(m *common.MapStr, key string, value string) {
 	if(value != "\\N"){
 		(*m)[key] = value
+	}
+}
+
+func addIfContentType(m *common.MapStr, key string, value string, t string) {
+	if(value != "\\N"){
+		if(t == "int") {
+			v, err := strconv.Atoi(value)
+			if err != nil {
+	       return
+	    }
+			(*m)[key] = v
+		}
 	}
 }
