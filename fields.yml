@@ -1,61 +1,70 @@
 - key: moviebeat
   title: moviebeat
   description:
-    fields:
-      - name: imdb.id
-        type: keyword
-        required: true
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+  fields:
+    - name: moviebeat
+      type: group
+      description: >
+        Fields from IMDb files
+      fields:
+        - name: imdb.id
+          type: keyword
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: imdb.type
-        type: keyword
-        required: true
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: imdb.type
+          type: keyword
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: title.primary
-        type: text
-        required: true
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: title.primary
+          type: text
+          ignore_above: 2048
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: title.original
-        type: text
-        required: false
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: title.original
+          type: text
+          ignore_above: 2048
+          required: false
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: is_adult
-        type: boolean
-        required: true
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: is_adult
+          type: boolean
+          required: true
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: start_year
-        type: integer
-        required: false
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: start_year
+          type: date
+          formats: "yyyy"
+          required: false
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: end_year
-        type: text
-        required: false
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: end_year
+          type: date
+          formats: "yyyy"
+          required: false
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: duration
-        type: integer
-        format: duration
-        required: false
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: duration
+          type: integer
+          format: duration
+          required: false
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
-      - name: imdb.genres
-        type: keyword
-        required: false
-        description: >
-          PLEASE UPDATE DOCUMENTATION
+        - name: imdb.genres
+          type: keyword
+          required: false
+          description: >
+            PLEASE UPDATE DOCUMENTATION
 
 - key: beat
   title: Beat

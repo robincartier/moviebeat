@@ -2138,5 +2138,123 @@ Kubernetes container image
 [[exported-fields-moviebeat]]
 == moviebeat fields
 
-{'fields': [{'required': True, 'type': 'keyword', 'name': 'imdb.id', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}, {'required': True, 'type': 'keyword', 'name': 'imdb.type', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}, {'required': True, 'type': 'text', 'name': 'title.primary', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}, {'required': False, 'type': 'text', 'name': 'title.original', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}, {'required': True, 'type': 'boolean', 'name': 'is_adult', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}, {'required': False, 'type': 'integer', 'name': 'start_year', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}, {'required': False, 'type': 'text', 'name': 'end_year', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}, {'format': 'duration', 'required': False, 'type': 'integer', 'description': 'PLEASE UPDATE DOCUMENTATION\n', 'name': 'duration'}, {'required': False, 'type': 'keyword', 'name': 'imdb.genres', 'description': 'PLEASE UPDATE DOCUMENTATION\n'}]}
+None
+
+
+[float]
+== moviebeat fields
+
+Fields from IMDb files
+
+
+
+*`moviebeat.imdb.id`*::
++
+--
+type: keyword
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.imdb.type`*::
++
+--
+type: keyword
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.title.primary`*::
++
+--
+type: text
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.title.original`*::
++
+--
+type: text
+
+required: False
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.is_adult`*::
++
+--
+type: boolean
+
+required: True
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.start_year`*::
++
+--
+type: date
+
+required: False
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.end_year`*::
++
+--
+type: date
+
+required: False
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.duration`*::
++
+--
+type: integer
+
+format: duration
+
+required: False
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
+
+*`moviebeat.imdb.genres`*::
++
+--
+type: keyword
+
+required: False
+
+PLEASE UPDATE DOCUMENTATION
+
+
+--
 

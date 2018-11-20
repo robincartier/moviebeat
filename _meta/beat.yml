@@ -11,12 +11,13 @@ output.elasticsearch:
   hosts: ["localhost:9200"]
 #   index: 'moviebeat-%{+yyyy.MM.dd}'
 
-# setup.template:
-#   name: 'moviebeat'
-#   pattern: 'moviebeat-*'
-#   enabled: true
+setup.template:
+  name: 'moviebeat'
+  pattern: 'moviebeat-*'
+  enabled: true
+  fields: "fields.yml"
 
 # setup.template.fields: "fields.yml"
 
 # Path to fields.yml file to generate the template
-setup.template.fields: "fields.yml"
+# setup.template.fields: "fields.yml"
