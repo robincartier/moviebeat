@@ -123,4 +123,20 @@ This will fetch and create all images required for the build process. The whole 
 Delete an elastic index ;
 ```
 curl -XDELETE localhost:9200/moviebeat-7.0.0-alpha1-2018.xx.xx
+curl -XDELETE 'http://localhost:9200/_template/moviebeat*'
 ```
+
+## Set Up/testing fields.yml
+Elastic keep the fields in cache, delete them
+```
+curl -XDELETE 'http://localhost:9200/_template/moviebeat*'
+```
+
+Delete your elatic index
+```
+curl -XDELETE 'http://localhost:9200/moviebeat*'
+```
+
+Delete indexes in kibana (Management>Index)
+
+If there are errors in fields.yml, elastic doesn't accept the template (but seems not to log anything either).

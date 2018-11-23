@@ -2141,14 +2141,7 @@ Kubernetes container image
 None
 
 
-[float]
-== moviebeat fields
-
-Fields from IMDb files
-
-
-
-*`moviebeat.imdb.id`*::
+*`imdb.id`*::
 +
 --
 type: keyword
@@ -2160,7 +2153,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.imdb.type`*::
+*`imdb.type`*::
 +
 --
 type: keyword
@@ -2172,7 +2165,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.title.primary`*::
+*`title.primary`*::
 +
 --
 type: text
@@ -2184,7 +2177,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.title.original`*::
+*`title.original`*::
 +
 --
 type: text
@@ -2196,7 +2189,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.is_adult`*::
+*`is_adult`*::
 +
 --
 type: boolean
@@ -2208,7 +2201,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.start_year`*::
+*`start_year`*::
 +
 --
 type: date
@@ -2220,7 +2213,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.end_year`*::
+*`end_year`*::
 +
 --
 type: date
@@ -2232,13 +2225,11 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.duration`*::
+*`duration`*::
 +
 --
 type: integer
 
-format: duration
-
 required: False
 
 PLEASE UPDATE DOCUMENTATION
@@ -2246,7 +2237,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`moviebeat.imdb.genres`*::
+*`imdb.genres`*::
 +
 --
 type: keyword

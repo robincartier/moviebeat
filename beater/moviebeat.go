@@ -115,7 +115,7 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 						Fields: json,
 					}
 					bt.client.Publish(event)
-					// logp.Info("Event sent")
+					logp.Info("Event sent")
 				}
 			}
 			counter++
@@ -216,8 +216,8 @@ func createJSON(beat_info_name string, data_line []string) (common.MapStr){
 	} else {
 		json["is_adult"] = false
 	}
-	// Optional fields : start_year, end_year
-	// (see _meta/fields.yml)
+	// // Optional fields : start_year, end_year
+	// // (see _meta/fields.yml)
 	addIfContent(&json, "title.original", data_line[3])
 	addIfContentType(&json, "imdb.genres", data_line[8], "str_array")
 	addIfContentType(&json, "duration", data_line[7], "int")

@@ -16,14 +16,12 @@
 
     - name: title.primary
       type: text
-      ignore_above: 2048
       required: true
       description: >
         PLEASE UPDATE DOCUMENTATION
 
     - name: title.original
       type: text
-      ignore_above: 2048
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
@@ -36,21 +34,18 @@
 
     - name: start_year
       type: date
-      formats: "yyyy"
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
 
     - name: end_year
       type: date
-      formats: "yyyy"
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
 
     - name: duration
       type: integer
-      format: duration
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
