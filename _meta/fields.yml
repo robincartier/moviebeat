@@ -2,6 +2,12 @@
   title: moviebeat
   description:
   fields:
+      name: _id
+      type: keyword
+      required: true
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+
     - name: imdb.id
       type: keyword
       required: true
@@ -10,13 +16,13 @@
 
     - name: imdb.type
       type: keyword
-      required: true
+      required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
 
     - name: title.primary
       type: text
-      required: true
+      required: trufalsee
       description: >
         PLEASE UPDATE DOCUMENTATION
 
@@ -28,7 +34,7 @@
 
     - name: is_adult
       type: boolean
-      required: true
+      required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
 
@@ -52,6 +58,18 @@
 
     - name: imdb.genres
       type: keyword
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+
+      name: imdb.rating
+      type: long
+      required: false
+      description: >
+        PLEASE UPDATE DOCUMENTATION
+
+      name: imdb.numVotes
+      type: integer
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
