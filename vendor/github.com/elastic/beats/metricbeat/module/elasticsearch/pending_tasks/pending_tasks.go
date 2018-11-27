@@ -21,23 +21,25 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/beats/libbeat/common/cfgwarn"
-	"github.com/elastic/beats/metricbeat/helper/elastic"
+	"github.com/elastic/beats/libbeat/logp"
+	"github.com/elastic/beats/metricbeat/helper"
 	"github.com/elastic/beats/metricbeat/mb"
+	"github.com/elastic/beats/metricbeat/mb/parse"
 	"github.com/elastic/beats/metricbeat/module/elasticsearch"
 )
 
 // init registers the MetricSet with the central registry.
 // The New method will be called after the setup of the module and before starting to fetch data
 func init() {
-	mb.Registry.MustAddMetricSet(elasticsearch.ModuleName, "pending_tasks", New,
-		mb.WithHostParser(elasticsearch.HostParser),
-		mb.DefaultMetricSet(),
-		mb.WithNamespace("elasticsearch.pending_tasks"),
-	)
+	mb.Registry.AddMetricSet(elasticsearch.ModuleName, "pending_tasks", New, hostParser)
 }
 
-const (
-	pendingTasksPath = "/_cluster/pending_tasks"
+var (
+	hostParser = parse.URLHostParserBuilder{
+		DefaultScheme: "http",
+		PathConfigKey: "path",
+		DefaultPath:   "_cluster/pending_tasks",
+	}.Build()
 )
 
 // MetricSet holds any configuration or state information. It must implement
@@ -45,46 +47,45 @@ const (
 // mb.BaseMetricSet because it implements all of the required mb.MetricSet
 // interface methods except for Fetch.
 type MetricSet struct {
-	*elasticsearch.MetricSet
+	mb.BaseMetricSet
+	http *helper.HTTP
 }
 
 // New creates a new instance of the MetricSet. New is responsible for unpacking
 // any MetricSet specific configuration options if there are any.
 func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
-	cfgwarn.Beta("the " + base.FullyQualifiedName() + " metricset is beta")
+	cfgwarn.Beta("The " + base.FullyQualifiedName() + " metricset is beta.")
 
-	ms, err := elasticsearch.NewMetricSet(base, pendingTasksPath)
+	http, err := helper.NewHTTP(base)
 	if err != nil {
 		return nil, err
 	}
 
-	return &MetricSet{MetricSet: ms}, nil
+	return &MetricSet{
+		base,
+		http,
+	}, nil
 }
 
 // Fetch methods implements the data gathering and data conversion to the right format
 func (m *MetricSet) Fetch(r mb.ReporterV2) {
-	isMaster, err := elasticsearch.IsMaster(m.HTTP, m.HostData().SanitizedURI+pendingTasksPath)
+	isMaster, err := elasticsearch.IsMaster(m.http, m.HostData().SanitizedURI)
 	if err != nil {
-		err := errors.Wrap(err, "error determining if connected Elasticsearch node is master")
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(errors.Wrap(err, "error determining if connected Elasticsearch node is master"))
 		return
 	}
 
 	// Not master, no event sent
 	if !isMaster {
-		m.Log.Debug("trying to fetch pending tasks from a non-master node")
+		logp.Debug(elasticsearch.ModuleName, "Trying to fetch pending tasks from a non-master node.")
 		return
 	}
 
-	content, err := m.HTTP.FetchContent()
+	content, err := m.http.FetchContent()
 	if err != nil {
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(err)
 		return
 	}
 
-	err = eventsMapping(r, content)
-	if err != nil {
-		m.Log.Error(err)
-		return
-	}
+	eventsMapping(r, content)
 }

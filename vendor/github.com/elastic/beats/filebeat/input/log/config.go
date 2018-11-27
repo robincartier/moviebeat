@@ -106,7 +106,6 @@ type config struct {
 	DockerJSON *struct {
 		Stream   string `config:"stream"`
 		Partial  bool   `config:"partial"`
-		ForceCRI bool   `config:"force_cri_logs"`
 		CRIFlags bool   `config:"cri_flags"`
 	} `config:"docker-json"`
 }
@@ -145,7 +144,7 @@ var ValidScanSort = map[string]struct{}{
 }
 
 func (c *config) Validate() error {
-	// DEPRECATED 6.0.0: warning is already outputted on input level
+	// DEPRECATED 6.0.0: warning is already outputted on prospector level
 	if c.InputType != "" {
 		c.Type = c.InputType
 	}

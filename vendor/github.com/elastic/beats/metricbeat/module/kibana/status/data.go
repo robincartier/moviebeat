@@ -51,25 +51,27 @@ var (
 	}
 )
 
-func eventMapping(r mb.ReporterV2, content []byte) error {
-	var event mb.Event
-	event.RootFields = common.MapStr{}
-	event.RootFields.Put("service.name", kibana.ModuleName)
+type OverallMetrics struct {
+	Metrics map[string][][]uint64
+}
 
+func eventMapping(r mb.ReporterV2, content []byte) error {
 	var data map[string]interface{}
 	err := json.Unmarshal(content, &data)
 	if err != nil {
-		event.Error = errors.Wrap(err, "failure parsing Kibana Status API response")
-		r.Event(event)
-		return event.Error
+		err = errors.Wrap(err, "failure parsing Kibana Stats API response")
+		r.Error(err)
+		return err
 	}
 
 	dataFields, err := schema.Apply(data)
 	if err != nil {
-		event.Error = errors.Wrap(err, "failure to apply status schema")
-		r.Event(event)
-		return event.Error
+		r.Error(errors.Wrap(err, "failure to apply stats schema"))
 	}
+
+	var event mb.Event
+	event.RootFields = common.MapStr{}
+	event.RootFields.Put("service.name", kibana.ModuleName)
 
 	event.MetricSetFields = dataFields
 

@@ -2,18 +2,6 @@
   title: moviebeat
   description:
   fields:
-      name: _id
-      type: keyword
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-
-    - name: imdb.id
-      type: keyword
-      required: true
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-
     - name: imdb.type
       type: keyword
       required: false

@@ -186,16 +186,19 @@ include::../../libbeat/docs/step-look-at-config.asciidoc[]
 [[config-filebeat-logstash]]
 === Step 3: Configure Filebeat to use Logstash
 
+:allplatforms:
 include::../../libbeat/docs/shared-logstash-config.asciidoc[]
 
 [[filebeat-template]]
 === Step 4: Load the index template in Elasticsearch
 
+:allplatforms:
 include::../../libbeat/docs/shared-template-load.asciidoc[]
 
 [[load-kibana-dashboards]]
 === Step 5: Set up the Kibana dashboards
 
+:allplatforms:
 include::../../libbeat/docs/dashboards.asciidoc[]
 
 [[filebeat-starting]]
@@ -209,7 +212,14 @@ NOTE: If you use an init.d script to start Filebeat on deb or rpm, you can't
 specify command line flags (see <<command-line-options>>). To specify flags,
 start Filebeat in the foreground.
 
-*deb and rpm:*
+*deb:*
+
+["source","sh",subs="attributes"]
+----------------------------------------------------------------------
+sudo service {beatname_lc} start
+----------------------------------------------------------------------
+
+*rpm:*
 
 ["source","sh",subs="attributes"]
 ----------------------------------------------------------------------

@@ -4,10 +4,8 @@ var:
   - name: paths
     default:
       - /var/log/elasticsearch/*.log
-    os.darwin:
-      - /usr/local/var/lib/elasticsearch/*.log
-    os.windows:
-      - c:/ProgramData/Elastic/Elasticsearch/logs/*.log
+    os.darwin: []
+    os.windows: []
 
 ingest_pipeline: ingest/pipeline.json
-input: config/log.yml
+prospector: config/log.yml

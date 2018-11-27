@@ -108,8 +108,6 @@ func (f skipField) IsSaveable() bool {
 // message: hello world
 // result:
 //	hello: world
-//
-// Deprecated: see pointerField
 type namedSkipField struct {
 	baseField
 }
@@ -119,20 +117,6 @@ func (f namedSkipField) Apply(b string, m Map) {
 }
 
 func (f namedSkipField) IsSaveable() bool {
-	return false
-}
-
-// pointerField will extract the content between the delimiters and we can reference it during when
-// extracing other values.
-type pointerField struct {
-	baseField
-}
-
-func (f pointerField) Apply(b string, m Map) {
-	m[f.Key()] = b
-}
-
-func (f pointerField) IsSaveable() bool {
 	return false
 }
 
@@ -208,10 +192,6 @@ func newField(id int, rawKey string, previous delimiter) (field, error) {
 		return newNamedSkipField(id, key[1:]), nil
 	}
 
-	if strings.HasPrefix(key, pointerFieldPrefix) {
-		return newPointerField(id, key[1:]), nil
-	}
-
 	if strings.HasPrefix(key, appendFieldPrefix) {
 		return newAppendField(id, key[1:], ordinal, greedy, previous), nil
 	}
@@ -229,12 +209,6 @@ func newSkipField(id int) skipField {
 
 func newNamedSkipField(id int, key string) namedSkipField {
 	return namedSkipField{
-		baseField{id: id, key: key},
-	}
-}
-
-func newPointerField(id int, key string) pointerField {
-	return pointerField{
 		baseField{id: id, key: key},
 	}
 }

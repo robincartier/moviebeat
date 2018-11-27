@@ -131,11 +131,7 @@ func createEvent(raw []byte, metadata inputsource.NetworkMetadata) *util.Data {
 		Timestamp: time.Now(),
 		Fields: common.MapStr{
 			"message": string(raw),
-			"log": common.MapStr{
-				"source": common.MapStr{
-					"ip": metadata.RemoteAddr.String(),
-				},
-			},
+			"source":  metadata.RemoteAddr.String(),
 		},
 	}
 	return data

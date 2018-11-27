@@ -2,12 +2,6 @@
   title: moviebeat
   description:
   fields:
-    - name: imdb.id
-      type: keyword
-      required: false
-      description: >
-        PLEASE UPDATE DOCUMENTATION
-
     - name: imdb.type
       type: keyword
       required: false
@@ -16,7 +10,7 @@
 
     - name: title.primary
       type: text
-      required: trufalsee
+      required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
 
@@ -73,10 +67,24 @@
   description: >
     Contains common beat fields available in all event types.
   fields:
+
+    - name: beat.name
+      description: >
+        The name of the Beat sending the log messages. If the Beat name is
+        set in the configuration file, then that value is used. If it is not
+        set, the hostname is used. To set the Beat name, use the `name`
+        option in the configuration file.
+    - name: beat.hostname
+      description: >
+        The hostname as returned by the operating system on which the Beat is
+        running.
     - name: beat.timezone
       description: >
         The timezone as returned by the operating system on which the Beat is
         running.
+    - name: beat.version
+      description: >
+        The version of the beat that generated this event.
 
     - name: "@timestamp"
       type: date
@@ -131,17 +139,12 @@
             Version of the agent.
     
           example: 6.0.0-rc2
-        - name: type
+        - name: name
           type: keyword
           description: >
             Name of the agent.
     
           example: filebeat
-        - name: hostname
-          type: keyword
-          description: >
-            Hostname of the agent.
-
         - name: id
           type: keyword
           description: >
@@ -1087,13 +1090,13 @@
     
             Note: The `:` is not part of the scheme.
           example: https
-        - name: hostname
+        - name: host.name
           type: keyword
           description: >
-            Hostname of the request, such as "elastic.co".
-
-            In some cases a URL may refer to an IP and/or port directly, without a
-            domain name. In this case, the IP address would go to the `hostname` field.
+            Hostname of the request, such as "example.com".
+    
+            For correlation the this field can be copied into the `host.name`
+            field.
           example: elastic.co
         - name: port
           type: integer

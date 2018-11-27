@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/joeshaw/multierror"
 	"github.com/pkg/errors"
 
 	"github.com/elastic/beats/libbeat/common"
@@ -53,11 +52,9 @@ func eventsMappingXPack(r mb.ReporterV2, m *MetricSet, content []byte) error {
 		return fmt.Errorf("jobs is not an array of maps")
 	}
 
-	var errs multierror.Errors
 	for _, job := range jobsArr {
 		job, ok = job.(map[string]interface{})
 		if !ok {
-			errs = append(errs, fmt.Errorf("job is not a map"))
 			continue
 		}
 
@@ -74,5 +71,5 @@ func eventsMappingXPack(r mb.ReporterV2, m *MetricSet, content []byte) error {
 		r.Event(event)
 	}
 
-	return errs.Err()
+	return nil
 }

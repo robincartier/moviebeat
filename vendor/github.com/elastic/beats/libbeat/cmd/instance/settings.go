@@ -26,11 +26,10 @@ import (
 
 // Settings contains basic settings for any beat to pass into GenRootCmd
 type Settings struct {
-	Name                  string
-	IndexPrefix           string
-	Version               string
-	Monitoring            report.Settings
-	RunFlags              *pflag.FlagSet
-	ConfigOverrides       *common.Config
-	DisableConfigResolver bool
+	Name            string
+	IndexPrefix     string
+	Version         string
+	Monitoring      report.Settings
+	RunFlags        *pflag.FlagSet
+	ConfigOverrides *common.Config
 }

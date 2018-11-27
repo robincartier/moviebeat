@@ -29,7 +29,7 @@ import (
 	"github.com/elastic/beats/libbeat/template"
 )
 
-func GenTemplateConfigCmd(settings instance.Settings, name, idxPrefix, beatVersion string) *cobra.Command {
+func GenTemplateConfigCmd(name, idxPrefix, beatVersion string) *cobra.Command {
 	genTemplateConfigCmd := &cobra.Command{
 		Use:   "template",
 		Short: "Export index template to stdout",
@@ -42,7 +42,7 @@ func GenTemplateConfigCmd(settings instance.Settings, name, idxPrefix, beatVersi
 				fmt.Fprintf(os.Stderr, "Error initializing beat: %s\n", err)
 				os.Exit(1)
 			}
-			err = b.InitWithSettings(settings)
+			err = b.Init()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error initializing beat: %s\n", err)
 				os.Exit(1)

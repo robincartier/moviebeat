@@ -23,7 +23,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/beats/libbeat/common/cfgwarn"
-	"github.com/elastic/beats/metricbeat/helper/elastic"
+	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/metricbeat/mb"
 	"github.com/elastic/beats/metricbeat/module/elasticsearch"
 )
@@ -58,52 +58,49 @@ func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 func (m *MetricSet) Fetch(r mb.ReporterV2) {
 	isMaster, err := elasticsearch.IsMaster(m.HTTP, m.HostData().SanitizedURI+ccrStatsPath)
 	if err != nil {
-		err = errors.Wrap(err, "error determining if connected Elasticsearch node is master")
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(errors.Wrap(err, "error determining if connected Elasticsearch node is master"))
 		return
 	}
 
 	// Not master, no event sent
 	if !isMaster {
-		m.Log.Debug("trying to fetch ccr stats from a non-master node")
+		logp.Debug(elasticsearch.ModuleName, "trying to fetch ccr stats from a non master node.")
 		return
 	}
 
 	info, err := elasticsearch.GetInfo(m.HTTP, m.HostData().SanitizedURI+ccrStatsPath)
 	if err != nil {
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(err)
 		return
 	}
 
 	elasticsearchVersion := info.Version.Number
 	isCCRStatsAPIAvailable, err := elasticsearch.IsCCRStatsAPIAvailable(elasticsearchVersion)
 	if err != nil {
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(err)
 		return
 	}
 
 	if !isCCRStatsAPIAvailable {
 		const errorMsg = "the %v metricset is only supported with Elasticsearch >= %v. " +
 			"You are currently running Elasticsearch %v"
-		err = fmt.Errorf(errorMsg, m.FullyQualifiedName(), elasticsearch.CCRStatsAPIAvailableVersion, elasticsearchVersion)
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(fmt.Errorf(errorMsg, m.FullyQualifiedName(), elasticsearch.CCRStatsAPIAvailableVersion, elasticsearchVersion))
 		return
 	}
 
 	content, err := m.HTTP.FetchContent()
 	if err != nil {
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(err)
 		return
 	}
 
 	if m.XPack {
-		err = eventsMappingXPack(r, m, *info, content)
+		eventsMappingXPack(r, m, *info, content)
 	} else {
 		err = eventsMapping(r, *info, content)
-	}
-
-	if err != nil {
-		m.Log.Error(err)
-		return
+		if err != nil {
+			r.Error(err)
+			return
+		}
 	}
 }

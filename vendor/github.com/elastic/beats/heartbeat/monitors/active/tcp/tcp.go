@@ -47,15 +47,15 @@ type connURL struct {
 func create(
 	name string,
 	cfg *common.Config,
-) (jobs []monitors.Job, endpoints int, err error) {
+) ([]monitors.Job, error) {
 	config := DefaultConfig
 	if err := cfg.Unpack(&config); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	tls, err := outputs.LoadTLSConfig(config.TLS)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	defaultScheme := "tcp"
@@ -63,16 +63,17 @@ func create(
 		defaultScheme = "ssl"
 	}
 
-	schemeHosts, err := collectHosts(&config, defaultScheme)
+	endpoints, err := collectHosts(&config, defaultScheme)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	typ := config.Name
 	timeout := config.Timeout
 	validator := makeValidateConn(&config)
 
-	for scheme, eps := range schemeHosts {
+	var jobs []monitors.Job
+	for scheme, eps := range endpoints {
 		schemeTLS := tls
 		if scheme == "tcp" || scheme == "plain" {
 			schemeTLS = nil
@@ -84,7 +85,7 @@ func create(
 			TLS:     schemeTLS,
 		})
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 
 		epJobs, err := dialchain.MakeDialerJobs(db, typ, scheme, eps, config.Mode,
@@ -92,17 +93,12 @@ func create(
 				return pingHost(dialer, addr, timeout, validator)
 			})
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 
 		jobs = append(jobs, epJobs...)
 	}
-
-	numHosts := 0
-	for _, hosts := range schemeHosts {
-		numHosts += len(hosts)
-	}
-	return jobs, numHosts, nil
+	return jobs, nil
 }
 
 func collectHosts(config *Config, defaultScheme string) (map[string][]dialchain.Endpoint, error) {

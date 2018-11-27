@@ -32,7 +32,9 @@ the _Beats Developer Guide_.
 ifndef::only-elasticsearch[]
 If you've configured the Logstash output, see
 <<load-dashboards-logstash>>.
-endif::only-elasticsearch[]
+endif::[]
+
+ifdef::allplatforms[]
 
 ifeval::["{requires-sudo}"=="yes"]
 
@@ -40,37 +42,32 @@ include::../../libbeat/docs/shared-note-sudo.asciidoc[]
 
 endif::[]
 
-ifdef::deb_os,rpm_os[]
 *deb and rpm:*
 
 ["source","sh",subs="attributes"]
 ----------------------------------------------------------------------
 {beatname_lc} setup --dashboards
 ----------------------------------------------------------------------
-endif::deb_os,rpm_os[]
 
-ifdef::mac_os[]
+
 *mac:*
 
 ["source","sh",subs="attributes"]
 ----------------------------------------------------------------------
 ./{beatname_lc} setup --dashboards
 ----------------------------------------------------------------------
-endif::mac_os[]
 
-ifdef::docker_platform[]
+
 *docker:*
 
 ["source","sh",subs="attributes"]
 ----------------------------------------------------------------------
 docker run --net="host" {dockerimage} setup --dashboards
 ----------------------------------------------------------------------
-endif::docker_platform[]
 
-ifdef::win_os[]
-ifndef::win_only[]
 *win:*
-endif::win_only[]
+
+endif::allplatforms[]
 
 Open a PowerShell prompt as an Administrator (right-click the PowerShell icon
 and select *Run As Administrator*).
@@ -82,7 +79,6 @@ and run:
 ----------------------------------------------------------------------
 PS > .{backslash}{beatname_lc}.exe setup --dashboards
 ----------------------------------------------------------------------
-endif::win_os[]
 
 ifndef::only-elasticsearch[]
 [[load-dashboards-logstash]]
@@ -97,7 +93,8 @@ credentials.
 TIP: The example shows a hard-coded password, but you should store sensitive
 values in the <<keystore,secrets keystore>>.
 
-ifdef::deb_os,rpm_os[]
+ifdef::allplatforms[]
+
 *deb and rpm:*
 
 ["source","sh",subs="attributes"]
@@ -109,9 +106,8 @@ ifdef::deb_os,rpm_os[]
   -E output.elasticsearch.password={pwd} \
   -E setup.kibana.host=localhost:5601
 ----
-endif::deb_os,rpm_os[]
 
-ifdef::mac_os[]
+
 *mac:*
 
 ["source","sh",subs="attributes"]
@@ -123,10 +119,8 @@ ifdef::mac_os[]
   -E output.elasticsearch.password={pwd} \
   -E setup.kibana.host=localhost:5601 
 ----
-endif::mac_os[]
 
 
-ifdef::docker_platform[]
 *docker:*
 
 ["source","sh",subs="attributes"]
@@ -138,12 +132,11 @@ docker run --net="host" {dockerimage} setup -e \
   -E output.elasticsearch.password={pwd} \
   -E setup.kibana.host=localhost:5601
 ----
-endif::docker_platform[]
 
-ifdef::win_os[]
-ifndef::win_only[]
+
 *win:*
-endif::win_only[]
+
+endif::allplatforms[]
 
 Open a PowerShell prompt as an Administrator (right-click the PowerShell icon
 and select *Run As Administrator*).
@@ -160,7 +153,7 @@ PS > .{backslash}{beatname_lc}.exe setup -e `
   -E output.elasticsearch.password={pwd} `
   -E setup.kibana.host=localhost:5601 
 ----
-endif::win_os[]
+
 
 endif::only-elasticsearch[]
 

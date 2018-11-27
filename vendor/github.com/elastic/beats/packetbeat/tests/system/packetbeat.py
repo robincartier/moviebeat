@@ -9,10 +9,10 @@ from beat.beat import TestCase
 from beat.beat import Proc
 
 TRANS_REQUIRED_FIELDS = ["@timestamp", "type", "status",
-                         "agent.type", "agent.hostname", "agent.version"]
+                         "beat.name", "beat.hostname", "beat.version"]
 
 FLOWS_REQUIRED_FIELDS = ["@timestamp", "type",
-                         "agent.type", "agent.hostname", "agent.version"]
+                         "beat.name", "beat.hostname", "beat.version"]
 
 
 class BaseTest(TestCase):

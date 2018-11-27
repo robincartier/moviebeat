@@ -30,22 +30,8 @@ import (
 	"strconv"
 	"strings"
 
-	errw "github.com/pkg/errors"
-
 	"github.com/elastic/beats/libbeat/common"
 )
-
-// ErrNotFound returned when we cannot find any dashboard to import.
-type ErrNotFound struct {
-	ErrorString string
-}
-
-// Error returns the human readable error.
-func (e *ErrNotFound) Error() string { return e.ErrorString }
-
-func newErrNotFound(s string, a ...interface{}) *ErrNotFound {
-	return &ErrNotFound{fmt.Sprintf(s, a...)}
-}
 
 // MessageOutputter is a function type for injecting status logging
 // into this module.
@@ -84,12 +70,12 @@ func (imp Importer) Import() error {
 	if imp.cfg.URL != "" || imp.cfg.File != "" {
 		err := imp.ImportArchive()
 		if err != nil {
-			return errw.Wrap(err, "Error importing URL/file")
+			return fmt.Errorf("Error importing URL/file: %v", err)
 		}
 	} else {
 		err := imp.ImportKibanaDir(imp.cfg.Dir)
 		if err != nil {
-			return errw.Wrapf(err, "Error importing directory %s", imp.cfg.Dir)
+			return fmt.Errorf("Error importing directory %s: %v", imp.cfg.Dir, err)
 		}
 	}
 	return nil
@@ -145,7 +131,6 @@ func (imp Importer) unzip(archive, target string) error {
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
 
 	// Closure to close the files on each iteration
 	unzipFile := func(file *zip.File) error {
@@ -164,11 +149,6 @@ func (imp Importer) unzip(archive, target string) error {
 		if file.FileInfo().IsDir() {
 			return os.MkdirAll(filePath, file.Mode())
 		}
-
-		if err = os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
-			return fmt.Errorf("failed making directory for file %v: %v", filePath, err)
-		}
-
 		fileReader, err := file.Open()
 		if err != nil {
 			return err
@@ -308,7 +288,7 @@ func (imp Importer) ImportKibanaDir(dir string) error {
 	imp.loader.statusMsg("Importing directory %v", dir)
 
 	if _, err := os.Stat(dir); err != nil {
-		return newErrNotFound("No directory %s", dir)
+		return fmt.Errorf("No directory %s", dir)
 	}
 
 	check := []string{}
@@ -329,7 +309,7 @@ func (imp Importer) ImportKibanaDir(dir string) error {
 	}
 
 	if len(types) == 0 {
-		return newErrNotFound("The directory %s does not contain the %s subdirectory."+
+		return fmt.Errorf("The directory %s does not contain the %s subdirectory."+
 			" There is nothing to import into Kibana.", dir, strings.Join(check, " or "))
 	}
 
@@ -346,8 +326,8 @@ func (imp Importer) ImportKibanaDir(dir string) error {
 	}
 
 	if wantDashboards && !importDashboards {
-		return newErrNotFound("No dashboards to import. Please make sure the %s directory "+
-			"contains a dashboard directory.", dir)
+		return fmt.Errorf("No dashboards to import. Please make sure the %s directory contains a dashboard directory.",
+			dir)
 	}
 	return nil
 }

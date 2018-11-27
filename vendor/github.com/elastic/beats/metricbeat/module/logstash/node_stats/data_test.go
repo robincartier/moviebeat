@@ -35,11 +35,11 @@ func TestEventMapping(t *testing.T) {
 	assert.NoError(t, err)
 
 	for _, f := range files {
-		input, err := ioutil.ReadFile(f)
+		content, err := ioutil.ReadFile(f)
 		assert.NoError(t, err)
 
 		reporter := &mbtest.CapturingReporterV2{}
-		err = eventMapping(reporter, input)
+		err = eventMapping(reporter, content)
 
 		assert.NoError(t, err, f)
 		assert.True(t, len(reporter.GetEvents()) >= 1, f)

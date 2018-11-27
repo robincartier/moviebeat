@@ -65,7 +65,11 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 		//print(HandleFile("name.basics", bt, b))
 		//title.akas
 		//print(HandleFile("title.akas", bt, b))
-		//title.basics : 
+		//title.basics :
+		// err = HandleFile("title.basics", bt, b)
+		// if err != nil {
+		// 	return err
+		// }
 		print(HandleFile("title.basics", bt, b))
 		//title.crew
 		//print(HandleFile("title.crew", bt, b))
@@ -73,16 +77,18 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 		//print(HandleFile("title.episode", bt, b))
 		//title.principals
 		//print(HandleFile("title.principals", bt, b))
-		//title.ratings : 
-		print(HandleFile("title.ratings", bt, b))
+		//title.ratings :
+		// print(HandleFile("title.ratings", bt, b))
 	}
 }
+
 
 // Stop stops moviebeat.
 func (bt *Moviebeat) Stop() {
 	bt.client.Close()
 	close(bt.done)
 }
+
 
 func HandleFile(name string, bt *Moviebeat, b *beat.Beat) (error) {
 	var err error
@@ -138,19 +144,8 @@ func HandleFile(name string, bt *Moviebeat, b *beat.Beat) (error) {
 
 		// send new data to elastic
 		if counter >= last_read_line {
-			// One line = One movie/actor
-			data_line := strings.Split(string(line), "\t")
-			if(len(data_line) >= 3) {
-				//Format JSON
-				json := createJSON(b.Info.Name, data_line, name)
-				event := beat.Event{
-					Timestamp: time.Now(),
-					Fields: json,
-				}
-				//Publish to ES
-				bt.client.Publish(event)
-				logp.Info("Event sent")
-			}
+			HandleEvent("title.basics", bt, b, line)
+			logp.Info("Event sent")
 		}
 		counter++
 	}
@@ -181,6 +176,26 @@ func HandleFile(name string, bt *Moviebeat, b *beat.Beat) (error) {
 	return nil
 }
 
+
+func HandleEvent(name string, bt *Moviebeat, b *beat.Beat, line string) {
+	// One line = One movie/actor
+	data_line := strings.Split(string(line), "\t")
+	if(len(data_line) >= 9) {
+		//Format JSON
+		json := createJSON(b.Info.Name, data_line, name)
+		event := beat.Event{
+			Timestamp: time.Now(),
+			Meta: common.MapStr{
+				"id": data_line[0],
+			},
+			Fields: json,
+		}
+		//Publish to ES
+		bt.client.Publish(event)
+	}
+}
+
+
 func DownloadFile(filepath string, url string) error {
 
     // Create the file
@@ -205,6 +220,7 @@ func DownloadFile(filepath string, url string) error {
 
     return nil
 }
+
 
 func ExtractGzip(archive string, output string) (string, error) {
 	f, err := os.Open(archive)
@@ -231,17 +247,17 @@ func deleteFile(path string) error {
 	return os.Remove(path)
 }
 
+
 func createJSON(beat_info_name string, data_line []string, file_name string) (common.MapStr){
 	//Depending of the file, json export is different
 	switch file_name {
 	case "title.basics":
 		json := common.MapStr{
 			"type": beat_info_name,
-			"imdb.id": data_line[0],
 			"imdb.type": data_line[1],
 			"title.primary": data_line[2],
 		}
-	
+
 		if(data_line[4] == "1"){
 			json["is_adult"] = true
 		} else {
@@ -254,7 +270,7 @@ func createJSON(beat_info_name string, data_line []string, file_name string) (co
 		addIfContentType(&json, "start_year", data_line[5], "int")
 		addIfContentType(&json, "end_year", data_line[6], "int")
 		return json
-	
+
 	case "title.ratings":
 		json := common.MapStr{
 			"type": beat_info_name,
@@ -269,11 +285,13 @@ func createJSON(beat_info_name string, data_line []string, file_name string) (co
 	return nil
 }
 
+
 func addIfContent(m *common.MapStr, key string, value string) {
 	if(value != "\\N"){
 		(*m)[key] = value
 	}
 }
+
 
 func addIfContentType(m *common.MapStr, key string, value string, t string) {
 	if(value != "\\N"){

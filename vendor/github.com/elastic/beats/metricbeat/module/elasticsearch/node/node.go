@@ -19,7 +19,7 @@ package node
 
 import (
 	"github.com/elastic/beats/libbeat/common/cfgwarn"
-	"github.com/elastic/beats/metricbeat/helper/elastic"
+	"github.com/elastic/beats/metricbeat/helper"
 	"github.com/elastic/beats/metricbeat/mb"
 	"github.com/elastic/beats/metricbeat/mb/parse"
 	"github.com/elastic/beats/metricbeat/module/elasticsearch"
@@ -34,47 +34,44 @@ func init() {
 	)
 }
 
-const (
-	// This only fetches data for the local node.
-	nodeStatsPath = "/_nodes/_local"
-)
-
 var (
 	hostParser = parse.URLHostParserBuilder{
 		DefaultScheme: "http",
 		PathConfigKey: "path",
+		// This only fetches data for the local node.
+		DefaultPath: "_nodes/_local",
 	}.Build()
 )
 
 // MetricSet type defines all fields of the MetricSet
 type MetricSet struct {
-	*elasticsearch.MetricSet
+	mb.BaseMetricSet
+	http *helper.HTTP
 }
 
 // New create a new instance of the MetricSet
 func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
-	cfgwarn.Beta("the " + base.FullyQualifiedName() + " metricset is beta")
+	cfgwarn.Beta("The " + base.FullyQualifiedName() + " metricset is beta")
 
-	ms, err := elasticsearch.NewMetricSet(base, nodeStatsPath)
+	http, err := helper.NewHTTP(base)
 	if err != nil {
 		return nil, err
 	}
-	return &MetricSet{MetricSet: ms}, nil
+	return &MetricSet{
+		base,
+		http,
+	}, nil
 }
 
 // Fetch methods implements the data gathering and data conversion to the right format
 // It returns the event which is then forward to the output. In case of an error, a
 // descriptive error must be returned.
 func (m *MetricSet) Fetch(r mb.ReporterV2) {
-	content, err := m.HTTP.FetchContent()
+	content, err := m.http.FetchContent()
 	if err != nil {
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(err)
 		return
 	}
 
-	err = eventsMapping(r, content)
-	if err != nil {
-		elastic.ReportAndLogError(err, r, m.Log)
-		return
-	}
+	eventsMapping(r, content)
 }

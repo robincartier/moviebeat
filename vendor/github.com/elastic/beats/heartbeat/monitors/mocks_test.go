@@ -26,7 +26,6 @@ import (
 
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
-	"github.com/elastic/beats/libbeat/monitoring"
 )
 
 type MockBeatClient struct {
@@ -100,13 +99,11 @@ func createMockJob(name string, cfg *common.Config) ([]Job, error) {
 }
 
 func mockPluginBuilder() pluginBuilder {
-	reg := monitoring.NewRegistry()
-
-	return pluginBuilder{"test", ActiveMonitor, func(s string, config *common.Config) ([]Job, int, error) {
+	return pluginBuilder{"test", ActiveMonitor, func(s string, config *common.Config) ([]Job, error) {
 		c := common.Config{}
 		j, err := createMockJob("test", &c)
-		return j, 1, err
-	}, newPluginCountersRecorder("test", reg)}
+		return j, err
+	}}
 }
 
 func mockPluginsReg() *pluginsReg {

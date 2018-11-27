@@ -19,6 +19,10 @@ output.elasticsearch:
 
 setup.template.overwrite: true
 
+output.elasticsearch.index: "moviebeat-%{[beat.version]}"
+setup.template.name: "moviebeat"
+setup.template.pattern: "moviebeat-*"
+
 # setup.template.fields: "fields.yml"
 
 # Path to fields.yml file to generate the template

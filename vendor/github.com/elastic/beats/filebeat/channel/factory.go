@@ -103,13 +103,16 @@ func (f *OutletFactory) Create(p beat.Pipeline, cfg *common.Config, dynFields *c
 
 	fields := common.MapStr{}
 	setMeta(fields, "module", config.Module)
-	setMeta(fields, "dataset", config.Fileset)
+	setMeta(fields, "name", config.Fileset)
 	if len(fields) > 0 {
 		fields = common.MapStr{
-			"event": fields,
+			"fileset": fields,
 		}
 	}
 	if config.Type != "" {
+		fields["prospector"] = common.MapStr{
+			"type": config.Type,
+		}
 		fields["input"] = common.MapStr{
 			"type": config.Type,
 		}

@@ -31,7 +31,6 @@ cleanup() {
     echo "Cleaning stopped docker containers and dangling images/networks/volumes..."
     docker system prune -f || true
   fi
-
   echo "Cleanup complete."
 }
 trap cleanup EXIT

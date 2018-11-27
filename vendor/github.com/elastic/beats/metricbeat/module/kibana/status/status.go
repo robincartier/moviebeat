@@ -20,7 +20,6 @@ package status
 import (
 	"github.com/elastic/beats/libbeat/common/cfgwarn"
 	"github.com/elastic/beats/metricbeat/helper"
-	"github.com/elastic/beats/metricbeat/helper/elastic"
 	"github.com/elastic/beats/metricbeat/mb"
 	"github.com/elastic/beats/metricbeat/mb/parse"
 	"github.com/elastic/beats/metricbeat/module/kibana"
@@ -45,7 +44,7 @@ var (
 
 // MetricSet type defines all fields of the MetricSet
 type MetricSet struct {
-	*kibana.MetricSet
+	mb.BaseMetricSet
 	http *helper.HTTP
 }
 
@@ -53,18 +52,12 @@ type MetricSet struct {
 func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 	cfgwarn.Beta("The " + base.FullyQualifiedName() + " metricset is beta")
 
-	ms, err := kibana.NewMetricSet(base)
-	if err != nil {
-		return nil, err
-	}
-
 	http, err := helper.NewHTTP(base)
 	if err != nil {
 		return nil, err
 	}
-
 	return &MetricSet{
-		ms,
+		base,
 		http,
 	}, nil
 }
@@ -75,14 +68,10 @@ func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 func (m *MetricSet) Fetch(r mb.ReporterV2) {
 	content, err := m.http.FetchContent()
 	if err != nil {
-		elastic.ReportAndLogError(err, r, m.Log)
+		r.Error(err)
 		return
 	}
 
-	err = eventMapping(r, content)
-
-	if err != nil {
-		m.Log.Error(err)
-		return
-	}
+	eventMapping(r, content)
+	return
 }

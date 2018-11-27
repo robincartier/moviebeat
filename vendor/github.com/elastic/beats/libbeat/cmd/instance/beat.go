@@ -36,11 +36,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/zap"
 
-	errw "github.com/pkg/errors"
-
 	"github.com/elastic/go-sysinfo"
 	"github.com/elastic/go-sysinfo/types"
-	ucfg "github.com/elastic/go-ucfg"
 
 	"github.com/elastic/beats/libbeat/api"
 	"github.com/elastic/beats/libbeat/asset"
@@ -122,9 +119,6 @@ type beatConfig struct {
 	Pipeline   pipeline.Config `config:",inline"`
 	Monitoring *common.Config  `config:"xpack.monitoring"`
 
-	// central managmenet settings
-	Management *common.Config `config:"management"`
-
 	// elastic stack 'setup' configurations
 	Dashboards *common.Config `config:"setup.dashboards"`
 	Template   *common.Config `config:"setup.template"`
@@ -152,13 +146,12 @@ func init() {
 // CryptGenRandom is used.
 func initRand() {
 	n, err := cryptRand.Int(cryptRand.Reader, big.NewInt(math.MaxInt64))
-	var seed int64
+	seed := n.Int64()
 	if err != nil {
 		// fallback to current timestamp
 		seed = time.Now().UnixNano()
-	} else {
-		seed = n.Int64()
 	}
+
 	rand.Seed(seed)
 }
 
@@ -316,10 +309,6 @@ func (b *Beat) createBeater(bt beat.Creator) (beat.Beater, error) {
 		return nil, err
 	}
 
-	// Report central management state
-	mgmt := monitoring.GetNamespace("state").GetRegistry().NewRegistry("management")
-	monitoring.NewBool(mgmt, "enabled").Set(b.ConfigManager.Enabled())
-
 	debugf("Initializing output plugins")
 	outputEnabled := b.Config.Output.IsSet() && b.Config.Output.Config().Enabled()
 	if !outputEnabled {
@@ -454,7 +443,7 @@ func (b *Beat) TestConfig(bt beat.Creator) error {
 }
 
 // Setup registers ES index template, kibana dashboards, ml jobs and pipelines.
-func (b *Beat) Setup(bt beat.Creator, template, setupDashboards, machineLearning, pipelines bool) error {
+func (b *Beat) Setup(bt beat.Creator, template, dashboards, machineLearning, pipelines bool) error {
 	return handleError(func() error {
 		err := b.Init()
 		if err != nil {
@@ -499,20 +488,14 @@ func (b *Beat) Setup(bt beat.Creator, template, setupDashboards, machineLearning
 			fmt.Println("Loaded index template")
 		}
 
-		if setupDashboards {
+		if dashboards {
 			fmt.Println("Loading dashboards (Kibana must be running and reachable)")
 			err = b.loadDashboards(context.Background(), true)
-
 			if err != nil {
-				switch err := errw.Cause(err).(type) {
-				case *dashboards.ErrNotFound:
-					fmt.Printf("Skipping loading dashboards, %+v\n", err)
-				default:
-					return err
-				}
-			} else {
-				fmt.Println("Loaded dashboards")
+				return err
 			}
+
+			fmt.Println("Loaded dashboards")
 		}
 
 		if machineLearning && b.SetupMLCallback != nil {
@@ -573,13 +556,8 @@ func (b *Beat) configure(settings Settings) error {
 		return fmt.Errorf("could not initialize the keystore: %v", err)
 	}
 
-	if settings.DisableConfigResolver {
-		common.OverwriteConfigOpts(obfuscateConfigOpts())
-	} else {
-		// TODO: Allow the options to be more flexible for dynamic changes
-		common.OverwriteConfigOpts(configOpts(store))
-	}
-
+	// TODO: Allow the options to be more flexible for dynamic changes
+	common.OverwriteConfigOpts(keystore.ConfigOpts(store))
 	b.keystore = store
 	err = cloudid.OverwriteSettings(cfg)
 	if err != nil {
@@ -623,7 +601,7 @@ func (b *Beat) configure(settings Settings) error {
 	logp.Info("Beat UUID: %v", b.Info.UUID)
 
 	// initialize config manager
-	b.ConfigManager, err = management.Factory()(b.Config.Management, reload.Register, b.Beat.Info.UUID)
+	b.ConfigManager, err = management.Factory()(reload.Register, b.Beat.Info.UUID)
 	if err != nil {
 		return err
 	}
@@ -736,7 +714,7 @@ func (b *Beat) loadDashboards(ctx context.Context, force bool) error {
 		err := dashboards.ImportDashboards(ctx, b.Info.Beat, b.Info.Hostname, paths.Resolve(paths.Home, ""),
 			b.Config.Kibana, esConfig, b.Config.Dashboards, nil)
 		if err != nil {
-			return errw.Wrap(err, "Error importing Kibana dashboards")
+			return fmt.Errorf("Error importing Kibana dashboards: %v", err)
 		}
 		logp.Info("Kibana dashboards successfully loaded.")
 	}
@@ -893,25 +871,5 @@ func logSystemInfo(info beat.Info) {
 		if len(process) > 0 {
 			log.Infow("Process info", "process", process)
 		}
-	}
-}
-
-// configOpts returns ucfg config options with a resolver linked to the current keystore.
-// TODO: Refactor to allow insert into the config option array without having to redefine everything
-func configOpts(store keystore.Keystore) []ucfg.Option {
-	return []ucfg.Option{
-		ucfg.PathSep("."),
-		ucfg.Resolve(keystore.ResolverWrap(store)),
-		ucfg.ResolveEnv,
-		ucfg.VarExp,
-	}
-}
-
-// obfuscateConfigOpts disables any resolvers in the configuration, instead we return the field
-// reference string directly.
-func obfuscateConfigOpts() []ucfg.Option {
-	return []ucfg.Option{
-		ucfg.PathSep("."),
-		ucfg.ResolveNOOP,
 	}
 }

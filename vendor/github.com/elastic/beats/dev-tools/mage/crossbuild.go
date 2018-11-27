@@ -48,9 +48,6 @@ func init() {
 // CrossBuildOption defines a option to the CrossBuild target.
 type CrossBuildOption func(params *crossBuildParams)
 
-// ImageSelectorFunc returns the name of the builder image.
-type ImageSelectorFunc func(platform string) (string, error)
-
 // ForPlatforms filters the platforms based on the given expression.
 func ForPlatforms(expr string) func(params *crossBuildParams) {
 	return func(params *crossBuildParams) {
@@ -81,35 +78,16 @@ func Serially() func(params *crossBuildParams) {
 	}
 }
 
-// ImageSelector returns the name of the selected builder image.
-func ImageSelector(f ImageSelectorFunc) func(params *crossBuildParams) {
-	return func(params *crossBuildParams) {
-		params.ImageSelector = f
-	}
-}
-
-// AddPlatforms sets dependencies on others platforms.
-func AddPlatforms(expressions ...string) func(params *crossBuildParams) {
-	return func(params *crossBuildParams) {
-		var list BuildPlatformList
-		for _, expr := range expressions {
-			list = NewPlatformList(expr)
-			params.Platforms = params.Platforms.Merge(list)
-		}
-	}
-}
-
 type crossBuildParams struct {
-	Platforms     BuildPlatformList
-	Target        string
-	Serial        bool
-	InDir         string
-	ImageSelector ImageSelectorFunc
+	Platforms BuildPlatformList
+	Target    string
+	Serial    bool
+	InDir     string
 }
 
 // CrossBuild executes a given build target once for each target platform.
 func CrossBuild(options ...CrossBuildOption) error {
-	params := crossBuildParams{Platforms: Platforms, Target: defaultCrossBuildTarget, ImageSelector: crossBuildImage}
+	params := crossBuildParams{Platforms: Platforms, Target: defaultCrossBuildTarget}
 	for _, opt := range options {
 		opt(&params)
 	}
@@ -133,10 +111,10 @@ func CrossBuild(options ...CrossBuildOption) error {
 		if !buildPlatform.Flags.CanCrossBuild() {
 			return fmt.Errorf("unsupported cross build platform %v", buildPlatform.Name)
 		}
-		builder := GolangCrossBuilder{buildPlatform.Name, params.Target, params.InDir, params.ImageSelector}
+		builder := GolangCrossBuilder{buildPlatform.Name, params.Target, params.InDir}
 		if params.Serial {
 			if err := builder.Build(); err != nil {
-				return errors.Wrapf(err, "failed cross-building target=%v for platform=%v %v", params.ImageSelector,
+				return errors.Wrapf(err, "failed cross-building target=%v for platform=%v",
 					params.Target, buildPlatform.Name)
 			}
 		} else {
@@ -196,16 +174,15 @@ func crossBuildImage(platform string) (string, error) {
 		return "", err
 	}
 
-	return BeatsCrossBuildImage + ":" + goVersion + "-" + tagSuffix, nil
+	return beatsCrossBuildImage + ":" + goVersion + "-" + tagSuffix, nil
 }
 
 // GolangCrossBuilder executes the specified mage target inside of the
 // associated golang-crossbuild container image for the platform.
 type GolangCrossBuilder struct {
-	Platform      string
-	Target        string
-	InDir         string
-	ImageSelector ImageSelectorFunc
+	Platform string
+	Target   string
+	InDir    string
 }
 
 // Build executes the build inside of Docker.
@@ -231,7 +208,7 @@ func (b GolangCrossBuilder) Build() error {
 	}
 
 	dockerRun := sh.RunCmd("docker", "run")
-	image, err := b.ImageSelector(b.Platform)
+	image, err := crossBuildImage(b.Platform)
 	if err != nil {
 		return errors.Wrap(err, "failed to determine golang-crossbuild image tag")
 	}

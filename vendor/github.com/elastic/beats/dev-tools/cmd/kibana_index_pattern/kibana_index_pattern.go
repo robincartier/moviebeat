@@ -19,73 +19,51 @@ package main
 
 import (
 	"flag"
-	"log"
-	"path/filepath"
+	"fmt"
+	"os"
 
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/kibana"
 	"github.com/elastic/beats/libbeat/version"
 )
 
-var usageText = `
-Usage: kibana_index_pattern [flags]
-  kibana_index_pattern generates Kibana index patterns from the Beat's
-  fields.yml file. It will create a index pattern file that is usable with both
-  Kibana 5.x and 6.x.
-Options:
-`[1:]
-
-var (
-	beatName       string
-	beatVersion    string
-	indexPattern   string
-	fieldsYAMLFile string
-	outputDir      string
-)
-
-func init() {
-	flag.StringVar(&beatName, "beat", "", "Name of the beat. (Required)")
-	flag.StringVar(&beatVersion, "version", version.GetDefaultVersion(), "Beat version. (Required)")
-	flag.StringVar(&indexPattern, "index", "", "Kibana index pattern. (Required)")
-	flag.StringVar(&fieldsYAMLFile, "fields", "fields.yml", "fields.yml file containing all fields used by the Beat.")
-	flag.StringVar(&outputDir, "out", "build/kibana", "Output dir.")
-}
-
 func main() {
-	log.SetFlags(0)
+	index := flag.String("index", "", "The name of the index pattern. (required)")
+	beatName := flag.String("beat-name", "", "The name of the beat. (required)")
+	beatDir := flag.String("beat-dir", "", "The local beat directory. (required)")
+	beatVersion := flag.String("version", version.GetDefaultVersion(), "The beat version.")
 	flag.Parse()
 
-	if beatName == "" {
-		log.Fatal("Name of the Beat must be set (-beat).")
+	if *index == "" {
+		fmt.Fprint(os.Stderr, "The name of the index pattern must be set.")
+		os.Exit(1)
 	}
 
-	if beatVersion == "" {
-		log.Fatal("Beat version must be set (-version).")
+	if *beatName == "" {
+		fmt.Fprint(os.Stderr, "The name of the beat must be set.")
+		os.Exit(1)
 	}
 
-	if indexPattern == "" {
-		log.Fatal("Index pattern must be set (-index).")
+	if *beatDir == "" {
+		fmt.Fprint(os.Stderr, "The beat directory must be set.")
+		os.Exit(1)
 	}
 
 	version5, _ := common.NewVersion("5.0.0")
 	version6, _ := common.NewVersion("6.0.0")
-	versions := []common.Version{*version5, *version6}
+	versions := []*common.Version{version5, version6}
 	for _, version := range versions {
-		indexPattern, err := kibana.NewGenerator(indexPattern, beatName, fieldsYAMLFile, outputDir, beatVersion, version)
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		file, err := indexPattern.Generate()
+		indexPatternGenerator, err := kibana.NewGenerator(*index, *beatName, *beatDir, *beatVersion, *version)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
 		}
-
-		// Log output file location.
-		absFile, err := filepath.Abs(file)
+		pattern, err := indexPatternGenerator.Generate()
 		if err != nil {
-			absFile = file
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
 		}
-		log.Printf(">> The index pattern was created under %v", absFile)
+		fmt.Fprintf(os.Stdout, "-- The index pattern was created under %v\n", pattern)
 	}
 }

@@ -29,25 +29,23 @@ import (
 )
 
 // GenExportConfigCmd write to stdout the current configuration in the YAML format.
-func GenExportConfigCmd(settings instance.Settings, name, idxPrefix, beatVersion string) *cobra.Command {
+func GenExportConfigCmd(name, idxPrefix, beatVersion string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "config",
 		Short: "Export current config to stdout",
 		Run: cli.RunWith(func(cmd *cobra.Command, args []string) error {
-			return exportConfig(settings, name, idxPrefix, beatVersion)
+			return exportConfig(name, idxPrefix, beatVersion)
 		}),
 	}
 }
 
-func exportConfig(settings instance.Settings, name, idxPrefix, beatVersion string) error {
+func exportConfig(name, idxPrefix, beatVersion string) error {
 	b, err := instance.NewBeat(name, idxPrefix, beatVersion)
 	if err != nil {
 		return fmt.Errorf("error initializing beat: %s", err)
 	}
 
-	settings.DisableConfigResolver = true
-
-	err = b.InitWithSettings(settings)
+	err = b.Init()
 	if err != nil {
 		return fmt.Errorf("error initializing beat: %s", err)
 	}

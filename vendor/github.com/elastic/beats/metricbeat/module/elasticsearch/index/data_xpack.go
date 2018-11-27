@@ -23,7 +23,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/joeshaw/multierror"
 	"github.com/pkg/errors"
 
 	"github.com/elastic/beats/libbeat/common"
@@ -97,28 +96,31 @@ func eventsMappingXPack(r mb.ReporterV2, m *MetricSet, info elasticsearch.Info, 
 	var indicesStruct IndicesStruct
 	err := json.Unmarshal(content, &indicesStruct)
 	if err != nil {
-		return errors.Wrap(err, "failure parsing Indices Stats Elasticsearch API response")
+		err = errors.Wrap(err, "failure parsing Indices Stats Elasticsearch API response")
+		m.Log.Error(err)
+		return err
 	}
 
 	clusterStateMetrics := []string{"metadata", "routing_table"}
 	clusterState, err := elasticsearch.GetClusterState(m.HTTP, m.HTTP.GetURI(), clusterStateMetrics)
 	if err != nil {
-		return errors.Wrap(err, "failure retrieving cluster state from Elasticsearch")
+		err = errors.Wrap(err, "failure retrieving cluster state from Elasticsearch")
+		m.Log.Error(err)
+		return err
 	}
 
-	var errs multierror.Errors
 	for name, index := range indicesStruct.Indices {
 		event := mb.Event{}
 		indexStats, err := xpackSchema.Apply(index)
 		if err != nil {
-			errs = append(errs, errors.Wrap(err, "failure applying index stats schema"))
+			m.Log.Error(errors.Wrap(err, "failure applying index stats schema"))
 			continue
 		}
 		indexStats["index"] = name
 
 		err = addClusterStateFields(name, indexStats, clusterState)
 		if err != nil {
-			errs = append(errs, errors.Wrap(err, "failure adding cluster state fields"))
+			m.Log.Error(errors.Wrap(err, "failure adding cluster state fields"))
 			continue
 		}
 
@@ -134,7 +136,7 @@ func eventsMappingXPack(r mb.ReporterV2, m *MetricSet, info elasticsearch.Info, 
 		r.Event(event)
 	}
 
-	return errs.Err()
+	return nil
 }
 
 // Fields added here are based on same fields being added by internal collection in

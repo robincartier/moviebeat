@@ -23,13 +23,6 @@ import (
 	"os"
 )
 
-var (
-	defaultCrossBuildGoDaemon = []CrossBuildOption{
-		ForPlatforms("linux"),
-		WithTarget("buildGoDaemon"),
-	}
-)
-
 // BuildGoDaemon builds the go-deamon binary.
 func BuildGoDaemon() error {
 	if GOOS != "linux" {
@@ -74,7 +67,6 @@ func BuildGoDaemon() error {
 
 // CrossBuildGoDaemon cross-build the go-daemon binary using the
 // golang-crossbuild environment.
-func CrossBuildGoDaemon(options ...CrossBuildOption) error {
-	opts := append(defaultCrossBuildGoDaemon, options...)
-	return CrossBuild(opts...)
+func CrossBuildGoDaemon() error {
+	return CrossBuild(ForPlatforms("linux"), WithTarget("buildGoDaemon"))
 }

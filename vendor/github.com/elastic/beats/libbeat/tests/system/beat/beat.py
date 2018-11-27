@@ -17,7 +17,7 @@ from .compose import ComposeMixin
 
 
 BEAT_REQUIRED_FIELDS = ["@timestamp",
-                        "agent.type", "agent.hostname", "agent.version"]
+                        "beat.name", "beat.hostname", "beat.version"]
 
 INTEGRATION_TESTS = os.environ.get('INTEGRATION_TESTS', False)
 
@@ -38,16 +38,12 @@ class Proc(object):
     the object gets collected.
     """
 
-    def __init__(self, args, outputfile, env={}):
+    def __init__(self, args, outputfile):
         self.args = args
         self.output = open(outputfile, "ab")
         self.stdin_read, self.stdin_write = os.pipe()
-        self.env = env
 
     def start(self):
-        # ensure that the environment is inherited to the subprocess.
-        variables = os.environ.copy()
-        variables = variables.update(self.env)
 
         if sys.platform.startswith("win"):
             self.proc = subprocess.Popen(
@@ -56,8 +52,7 @@ class Proc(object):
                 stdout=self.output,
                 stderr=subprocess.STDOUT,
                 bufsize=0,
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
-                env=variables)
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         else:
             self.proc = subprocess.Popen(
                 self.args,
@@ -65,9 +60,7 @@ class Proc(object):
                 stdout=self.output,
                 stderr=subprocess.STDOUT,
                 bufsize=0,
-                env=variables)
-            # If a "No such file or directory" error points you here, run
-            # "make metricbeat.test" on metricbeat folder
+            )
         return self.proc
 
     def kill(self):
@@ -150,8 +143,7 @@ class TestCase(unittest.TestCase, ComposeMixin):
                  output=None,
                  logging_args=["-e", "-v", "-d", "*"],
                  extra_args=[],
-                 exit_code=None,
-                 env={}):
+                 exit_code=None):
         """
         Executes beat.
         Waits for the process to finish before returning to
@@ -159,7 +151,7 @@ class TestCase(unittest.TestCase, ComposeMixin):
         """
         proc = self.start_beat(cmd=cmd, config=config, output=output,
                                logging_args=logging_args,
-                               extra_args=extra_args, env=env)
+                               extra_args=extra_args)
         if exit_code != None:
             return proc.check_wait(exit_code)
 
@@ -170,8 +162,7 @@ class TestCase(unittest.TestCase, ComposeMixin):
                    config=None,
                    output=None,
                    logging_args=["-e", "-v", "-d", "*"],
-                   extra_args=[],
-                   env={}):
+                   extra_args=[]):
         """
         Starts beat and returns the process handle. The
         caller is responsible for stopping / waiting for the
@@ -202,7 +193,7 @@ class TestCase(unittest.TestCase, ComposeMixin):
         if extra_args:
             args.extend(extra_args)
 
-        proc = Proc(args, os.path.join(self.working_dir, output), env)
+        proc = Proc(args, os.path.join(self.working_dir, output))
         proc.start()
         return proc
 
@@ -510,8 +501,7 @@ class TestCase(unittest.TestCase, ComposeMixin):
 
         global yaml_cache
 
-        # TODO: Make fields_doc path more generic to work with beat-generator. If it can't find file
-        # "fields.yml" you should run "make update" on metricbeat folder
+        # TODO: Make fields_doc path more generic to work with beat-generator
         with open(fields_doc, "r") as f:
             path = os.path.abspath(os.path.dirname(__file__) + "../../../../fields.yml")
             if not os.path.isfile(path):

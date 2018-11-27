@@ -19,7 +19,6 @@ package index_recovery
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -41,23 +40,23 @@ func eventsMappingXPack(r mb.ReporterV2, m *MetricSet, content []byte) error {
 	for indexName, indexData := range data {
 		indexData, ok := indexData.(map[string]interface{})
 		if !ok {
-			return fmt.Errorf("%v is not a map", indexName)
+			continue
 		}
 
 		shards, ok := indexData["shards"]
 		if !ok {
-			return elastic.MakeErrorForMissingField(indexName+".shards", elastic.Elasticsearch)
+			continue
 		}
 
 		shardsArr, ok := shards.([]interface{})
 		if !ok {
-			return fmt.Errorf("%v.shards is not an array", indexName)
+			continue
 		}
 
-		for shardIdx, shard := range shardsArr {
+		for _, shard := range shardsArr {
 			shard, ok := shard.(map[string]interface{})
 			if !ok {
-				return fmt.Errorf("%v.shards[%v] is not a map", indexName, shardIdx)
+				continue
 			}
 
 			shard["index_name"] = indexName

@@ -117,7 +117,7 @@ func decodeValue(data common.MapStr, key string) {
 		return
 	}
 	s := v.(string)
-	var d interface{}
+	var d common.MapStr
 	json.Unmarshal([]byte(s), &d)
 
 	data.Put(key, d)

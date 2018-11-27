@@ -76,7 +76,7 @@ func isLibbeat(beatPath string) bool {
 	return filepath.Base(beatPath) == "libbeat"
 }
 
-func writeGeneratedFieldsYml(fieldFiles []*YmlFile, output string) error {
+func writeGeneratedFieldsYml(beatPath string, fieldFiles []*YmlFile, output string) error {
 	data, err := GenerateFieldsYml(fieldFiles)
 	if err != nil {
 		return err
@@ -91,7 +91,8 @@ func writeGeneratedFieldsYml(fieldFiles []*YmlFile, output string) error {
 		return fw.Flush()
 	}
 
-	f, err := os.Create(output)
+	outPath := filepath.Join(beatPath, output)
+	f, err := os.Create(outPath)
 	if err != nil {
 		return err
 	}
@@ -142,5 +143,5 @@ func Generate(esBeatsPath, beatPath string, files []*YmlFile, output string) err
 		return err
 	}
 
-	return writeGeneratedFieldsYml(files, output)
+	return writeGeneratedFieldsYml(beatPath, files, output)
 }

@@ -2,7 +2,7 @@
   type: group
   description: >
     consumergroup
-  release: ga
+  release: beta
   fields:
     - name: broker
       type: group
