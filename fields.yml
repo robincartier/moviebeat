@@ -50,13 +50,13 @@
       description: >
         PLEASE UPDATE DOCUMENTATION
 
-      name: imdb.rating
-      type: long
+      name: user.rating
+      type: float
       required: false
       description: >
         PLEASE UPDATE DOCUMENTATION
 
-      name: imdb.numVotes
+      name: user.num_votes
       type: integer
       required: false
       description: >

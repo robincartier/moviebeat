@@ -2225,7 +2225,7 @@ PLEASE UPDATE DOCUMENTATION
 
 --
 
-*`imdb.numVotes`*::
+*`user.num_votes`*::
 +
 --
 type: integer

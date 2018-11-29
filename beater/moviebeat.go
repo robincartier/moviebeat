@@ -10,7 +10,8 @@ import (
 	"net/http"
 	"compress/gzip"
 	"io/ioutil"
-
+	"encoding/json"
+	"bytes"
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
@@ -66,11 +67,11 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 		//title.akas
 		//print(HandleFile("title.akas", bt, b))
 		//title.basics :
-		// err = HandleFile("title.basics", bt, b)
-		// if err != nil {
-		// 	return err
-		// }
-		print(HandleFile("title.basics", bt, b))
+		err = HandleFile("title.basics", bt, b)
+		if err != nil {
+			return err
+		}
+		// print(HandleFile("title.basics", bt, b))
 		//title.crew
 		//print(HandleFile("title.crew", bt, b))
 		//title.episode
@@ -79,7 +80,12 @@ func (bt *Moviebeat) Run(b *beat.Beat) error {
 		//print(HandleFile("title.principals", bt, b))
 		//title.ratings :
 		// print(HandleFile("title.ratings", bt, b))
+		err = HandleFile("title.ratings", bt, b)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 
@@ -143,11 +149,15 @@ func HandleFile(name string, bt *Moviebeat, b *beat.Beat) (error) {
 	for _, line := range strings.Split(content, "\n") {
 
 		// send new data to elastic
-		if counter >= last_read_line {
-			HandleEvent("title.basics", bt, b, line)
-			logp.Info("Event sent")
+		if counter > last_read_line {
+			err = HandleEvent(name, bt, b, line)
+			if err != nil {
+				return err
+			}
+			// logp.Info("Event sent")
 		}
 		counter++
+
 	}
 	// Write last read line into last_line_imdb.txt
 	last_count := fmt.Sprintf("%07d\n", counter)
@@ -177,27 +187,79 @@ func HandleFile(name string, bt *Moviebeat, b *beat.Beat) (error) {
 }
 
 
-func HandleEvent(name string, bt *Moviebeat, b *beat.Beat, line string) {
+func HandleEvent(name string, bt *Moviebeat, b *beat.Beat, line string) (error) {
+
 	// One line = One movie/actor
-	data_line := strings.Split(string(line), "\t")
-	if(len(data_line) >= 9) {
-		//Format JSON
-		json := createJSON(b.Info.Name, data_line, name)
-		event := beat.Event{
-			Timestamp: time.Now(),
-			Meta: common.MapStr{
-				"id": data_line[0],
-			},
-			Fields: json,
+	// data_line := strings.Split(string(line), "\t")
+	// logp.Info(data_line[0])
+	switch name {
+	case "title.basics" :
+		data_line := strings.Split(string(line), "\t")
+		if(len(data_line) >= 9) {
+			//Format JSON
+			json := createJSON(b.Info.Name, data_line)
+			event := beat.Event{
+				Timestamp: time.Now(),
+				Meta: common.MapStr{
+					"id": data_line[0],
+				},
+				Fields: json,
+			}
+			//Publish to ES
+			bt.client.Publish(event)
 		}
-		//Publish to ES
-		bt.client.Publish(event)
+
+	case "title.ratings":
+		data_line := strings.Split(string(line), "\t")
+		if(len(data_line) >= 3) {
+			rating, err := strconv.ParseFloat(data_line[1], 64)
+			if err != nil {
+				 return err
+			}
+			num_votes, err := strconv.Atoi(data_line[2])
+			if err != nil {
+				 return err
+			}
+			MakeRequest(data_line[0], rating, num_votes)
+		}
 	}
+
+	return nil
+}
+
+
+func MakeRequest(id string, rating float64, num_votes int) error{
+	message := map[string]interface{}{
+		"doc": map[string]interface{}{
+			"user.rating": rating,
+			"user.num_votes": num_votes,
+		},
+	}
+
+	bytesRepresentation, err := json.Marshal(message)
+	if err != nil {
+		logp.Info(fmt.Sprint(err))
+	}
+	// logp.Info("http://localhost:9200/moviebeat-7.0.0-alpha1-2018/doc/"+id+"/_update")
+	// resp, err := http.Post("http://localhost:9200/website/blog/1", "application/json", bytes.NewBuffer(bytesRepresentation))
+	resp, err := http.Post("http://localhost:9200/moviebeat-7.0.0-alpha1/doc/"+id+"/_update", "application/json", bytes.NewBuffer(bytesRepresentation))
+	// resp, err := http.Post("http://localhost:9200/moviebeat-7.0.0-alpha1/doc/tt00000/_update", "application/json", bytes.NewBuffer(bytesRepresentation))
+	if err != nil {
+		logp.Info(fmt.Sprint(err))
+	}
+
+	var result map[string]interface{}
+
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	logp.Info(fmt.Sprint(result))
+	logp.Info(fmt.Sprint(result["data"]))
+
+	return nil
 }
 
 
 func DownloadFile(filepath string, url string) error {
-
     // Create the file
     out, err := os.Create(filepath)
     if err != nil {
@@ -248,41 +310,25 @@ func deleteFile(path string) error {
 }
 
 
-func createJSON(beat_info_name string, data_line []string, file_name string) (common.MapStr){
-	//Depending of the file, json export is different
-	switch file_name {
-	case "title.basics":
-		json := common.MapStr{
-			"type": beat_info_name,
-			"imdb.type": data_line[1],
-			"title.primary": data_line[2],
-		}
-
-		if(data_line[4] == "1"){
-			json["is_adult"] = true
-		} else {
-			json["is_adult"] = false
-		}
-		// Optional fields : (see _meta/fields.yml)
-		addIfContent(&json, "title.original", data_line[3])
-		addIfContentType(&json, "imdb.genres", data_line[8], "str_array")
-		addIfContentType(&json, "duration", data_line[7], "int")
-		addIfContentType(&json, "start_year", data_line[5], "int")
-		addIfContentType(&json, "end_year", data_line[6], "int")
-		return json
-
-	case "title.ratings":
-		json := common.MapStr{
-			"type": beat_info_name,
-			"_id": data_line[0],
-			"imdb.id": data_line[0],
-			"imdb.rating": data_line[1],
-			"imdb.numVotes": data_line[2],
-		}
-		return json
+func createJSON(beat_info_name string, data_line []string) (common.MapStr){
+	json := common.MapStr{
+		"type": beat_info_name,
+		"imdb.type": data_line[1],
+		"title.primary": data_line[2],
 	}
 
-	return nil
+	if(data_line[4] == "1"){
+		json["is_adult"] = true
+	} else {
+		json["is_adult"] = false
+	}
+	// Optional fields : (see _meta/fields.yml)
+	addIfContent(&json, "title.original", data_line[3])
+	addIfContentType(&json, "imdb.genres", data_line[8], "str_array")
+	addIfContentType(&json, "duration", data_line[7], "int")
+	addIfContentType(&json, "start_year", data_line[5], "int")
+	addIfContentType(&json, "end_year", data_line[6], "int")
+	return json
 }
 
 
